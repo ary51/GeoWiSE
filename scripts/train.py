@@ -264,9 +264,39 @@ class GeoLightningModel(pl.LightningModule):
         
         return total_loss
 
+    def test_step(self, batch, batch_idx):
+        base_images = batch['pixel_values']
+        labels = batch['labels']
+        
+        global_view = self.gpu_blur(base_images)
+        crop1 = self.gpu_crop(base_images)
+        crop2 = self.gpu_crop(base_images)
+        gpu_pixel_values = torch.stack([global_view, crop1, crop2], dim=1)
+        
+        s2_logits, _ = self(gpu_pixel_values)
+        
+        with torch.no_grad():
+            preds = torch.argmax(s2_logits, dim=1)
+            pred_lat = self.class_centroids[preds, 0]
+            pred_lon = self.class_centroids[preds, 1]
+            actual_lat = batch['actual_lat'].to(self.device)
+            actual_lon = batch['actual_lon'].to(self.device)
+            
+            distances = distance(actual_lat, actual_lon, pred_lat, pred_lon)
+            
+            # Log metrics so the test script can read them
+            self.log('test_mean_dist', torch.mean(distances))
+            self.log('test_median_dist', torch.median(distances))
+            self.log('acc_25km', (distances <= 25).float().mean())
+            self.log('acc_200km', (distances <= 200).float().mean())
+            self.log('acc_750km', (distances <= 750).float().mean())
+            self.log('acc_2500km', (distances <= 2500).float().mean())
+            
+        return distances
+
     def configure_optimizers(self):
         trainable_params = filter(lambda p: p.requires_grad, self.parameters())
-        optimizer = torch.optim.AdamW(trainable_params, lr=1e-3, weight_decay=0.01)
+        optimizer = torch.optim.AdamW(trainable_params, lr=5e-4, weight_decay=0.01)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
             optimizer, 
             T_0=1000,
@@ -357,7 +387,7 @@ def main():
     # =========================================================
     # THE RESUME LOGIC (Bulletproof Stage 2)
     # =========================================================
-    stage2_ckpt_path = os.path.join(os.path.dirname(__file__), '..', 'checkpoints_stage2', 'last.ckpt')
+    stage2_ckpt_path = os.path.join(os.path.dirname(__file__), '..', 'checkpoints_stage2', 'last-v2.ckpt')
     stage1_ckpt_path = os.path.join(os.path.dirname(__file__), '..', 'checkpoints', 'last.ckpt')
 
     if os.path.exists(stage2_ckpt_path):
@@ -368,6 +398,7 @@ def main():
         trainer.fit(
             model, 
             train_loader,
+            ckpt_path=stage2_ckpt_path
         )
         
     else:
