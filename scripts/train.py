@@ -25,6 +25,7 @@ from torch.utils.data import DataLoader
 from transformers import AutoModel, AutoProcessor
 from datasets import load_dataset
 import pytorch_lightning as pl
+import reverse_geocoder as rg
 
 # Import your custom modules
 from src.data.geometry import CoordsToS2
@@ -248,6 +249,15 @@ class GeoLightningModel(pl.LightningModule):
                 g_lon = g_coords_cpu[i, 1].item()
                 dist_val = dists_cpu[i].item()
                 
+                try:
+                    # Translate the raw coordinates instantly in RAM
+                    location = rg.search((g_lat, g_lon), verbose=False)
+                    pred_city = location[0].get('name', 'Unknown')
+                    pred_cc = location[0].get('cc', 'Unknown')
+                    pred_place = f"{pred_city}, {pred_cc}"
+                except:
+                    pred_place = "Unknown Location"
+
                 line = f"  {i+1}. {p_val:5.1f}% | {dist_val:5.0f} km | Guess: ({g_lat:6.2f}, {g_lon:6.2f})"
                 print(line)
                 log_str += line + "\n"
