@@ -4,7 +4,7 @@ __pycache__/
 *~
 venv/
 .env
-data/*
+
 !data/.keep
 *.pt
 checkpoints/

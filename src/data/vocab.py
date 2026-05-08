@@ -5,10 +5,10 @@ from collections import Counter
 from datasets import load_dataset
 
 # Add the root 'GeoLocked' directory to the Python path
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import your existing function!
+# Import your existing function
 from src.data.geometry import CoordsToS2
 
 def main():

@@ -112,9 +112,6 @@ class OSV5MCollator:
             "country": countries
         }
 
-# ==========================================
-# 2. PyTorch Lightning Model
-# ==========================================
 class GeoLightningModel(pl.LightningModule):
     def __init__(self, class_centroids):
         super().__init__()
@@ -139,9 +136,6 @@ class GeoLightningModel(pl.LightningModule):
         
         self.cosine_loss = nn.CosineEmbeddingLoss()
 
-        # =========================================================
-        # THE GPU MATH TOOLS (Runs on CUDA instantly)
-        # =========================================================
         self.gpu_blur = T.GaussianBlur(kernel_size=9, sigma=(2.0, 5.0))
         self.gpu_crop = T.RandomResizedCrop(size=(224, 224), scale=(0.1, 0.4))
 
@@ -150,16 +144,16 @@ class GeoLightningModel(pl.LightningModule):
         B, N, C, H, W = pixel_values.shape
         flat_images = pixel_values.view(B * N, C, H, W)
         
-        # --- SigLIP Vision ---
+        # SigLIP Vision
         siglip_out = self.siglip.vision_model(pixel_values=flat_images)
         siglip_vecs = siglip_out.pooler_output 
         siglip_vecs = siglip_vecs.view(B, N, -1).mean(dim=1) # Average the 3 crops -> [B, 768]
         
-        # --- DINOv3 Vision ---
+        # DINOv3 Vision
         dino_out = self.dinov3(flat_images).pooler_output
         dino_vecs = dino_out.view(B, N, -1).mean(dim=1) # Average the 3 crops -> [B, 384]
         
-        # --- S2 Prediction ---
+        # S2 Prediction
         s2_logits = self.fusion_head(siglip_vecs, dino_vecs)
         
         return s2_logits, siglip_vecs
@@ -169,9 +163,6 @@ class GeoLightningModel(pl.LightningModule):
         base_images = batch['pixel_values'] 
         labels = batch['labels']
         
-        # =======================================================
-        # BORED GPU HACK: Generate crops and blur inside VRAM
-        # =======================================================
         global_view = self.gpu_blur(base_images)
         crop1 = self.gpu_crop(base_images)
         crop2 = self.gpu_crop(base_images)
@@ -321,9 +312,6 @@ class GeoLightningModel(pl.LightningModule):
             }
         }
 
-# ==========================================
-# 3. Main Execution
-# ==========================================
 def main():
     print("Initializing Training Pipeline...")
     
@@ -373,7 +361,7 @@ def main():
     from pytorch_lightning.callbacks import ModelCheckpoint
 
     checkpoint = ModelCheckpoint(
-        dirpath="checkpoints_stage2/", 
+        dirpath=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'checkpoints_stage2')), 
         filename="geoguessr-stage2-{epoch:02d}-{step:05d}",
         every_n_train_steps=50, 
         save_top_k=1, 
@@ -394,9 +382,6 @@ def main():
     
     model = GeoLightningModel(centroids)
 
-    # =========================================================
-    # THE RESUME LOGIC (Bulletproof Stage 2)
-    # =========================================================
     stage2_ckpt_path = os.path.join(os.path.dirname(__file__), '..', 'checkpoints_stage2', 'last-v2.ckpt')
     stage1_ckpt_path = os.path.join(os.path.dirname(__file__), '..', 'checkpoints', 'last.ckpt')
 

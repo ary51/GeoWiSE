@@ -73,17 +73,19 @@ def generate_attention_map(image_path, checkpoint_path):
     plt.tight_layout()
     
     # Save it directly into your new figures folder!
-    output_filename = "figures/Attention_Heatmap.png"
+    output_filename = os.path.join(BASE_DIR, "figures", "Attention_Heatmap.png")
     plt.savefig(output_filename, dpi=300)
     print(f"Success! Saved as {output_filename}")
     plt.show()
 
 if __name__ == "__main__":
+
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     # Pick one of the qualitative images you saved earlier!
-    TEST_IMAGE = "figures/dyno_tester.jpg" 
+    TEST_IMAGE = os.path.join(BASE_DIR, "figures", "dyno_tester.jpg") 
     
     # The path to your Stage 2 weights in your new structure
-    CHECKPOINT = "checkpoints_stage2/last.ckpt"
+    CHECKPOINT = os.path.join(BASE_DIR, "checkpoints_stage2", "last.ckpt")
     
     if not os.path.exists(TEST_IMAGE):
         print(f"Error: Could not find image at {TEST_IMAGE}. Please check the filename!")

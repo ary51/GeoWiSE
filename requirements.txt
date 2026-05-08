@@ -1,6 +1,13 @@
 torch
 torchvision
-pytorch-lightning
+torchaudio
 transformers
 datasets==2.19.1
+pytorch-lightning
 s2sphere
+reverse_geocoder
+matplotlib
+opencv-python
+numpy
+pillow
+pandas

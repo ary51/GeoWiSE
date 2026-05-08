@@ -3,13 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-# ==========================================
-# FILE PATHS - CHANGE THESE IF NEEDED
-# ==========================================
-STAGE_1_LOG = "guess_log.txt"
-STAGE_2_LOG = "guess_log2.txt"        # Add .txt if your file has it!
-STAGE_1_CSV = "metrics.csv"
-STAGE_2_CSV = "metrics2.csv"          # Add .csv if your file has it!
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+STAGE_1_LOG = os.path.join(BASE_DIR, "lightning_logs", "guess_log.txt")
+STAGE_2_LOG = os.path.join(BASE_DIR, "lightning_logs", "guess_log2.txt")
+STAGE_1_CSV = os.path.join(BASE_DIR, "metrics.csv") 
+STAGE_2_CSV = os.path.join(BASE_DIR, "metrics2.csv")
 
 def analyze_guess_log(filepath, stage_name):
     distances = []
@@ -81,7 +79,7 @@ def plot_loss_curves():
     ax.legend()
     fig.tight_layout()
     
-    plt.savefig("Fig1_Loss_Curves.png", dpi=300)
+    plt.savefig(os.path.join(BASE_DIR, "figures", "Fig1_Loss_Curves.png"), dpi=300)
     print(" -> Saved 'Fig1_Loss_Curves.png'")
 
 def plot_accuracy_bar(stats1, stats2):
@@ -110,7 +108,7 @@ def plot_accuracy_bar(stats1, stats2):
     ax.legend()
     fig.tight_layout()
 
-    plt.savefig("Fig2_Accuracy_Comparison.png", dpi=300)
+    plt.savefig(os.path.join(BASE_DIR, "figures", "Fig2_Accuracy_Comparison.png"), dpi=300)
     print(" -> Saved 'Fig2_Accuracy_Comparison.png'")
 
 if __name__ == "__main__":

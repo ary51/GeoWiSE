@@ -16,10 +16,6 @@ from src.data.transform import Transform
 from scripts.train import GeoLightningModel, OSV5MCollator, NUM_CLASSES 
 
 def main():
-    print("==================================================")
-    print(" LOCAL GRADING STATION: STAGE 1 vs STAGE 2")
-    print("==================================================")
-    
     # 1. Load Vocab
     vocab_path = os.path.join(os.path.dirname(__file__), '..', 'src', 'data', 'vocab.json')
     with open(vocab_path, "r") as f:
@@ -30,12 +26,11 @@ def main():
     processor = AutoProcessor.from_pretrained("google/siglip2-base-patch16-224")
     fast_transform = Transform()
     collator = OSV5MCollator(processor, fast_transform, s2_to_class)
-    
-    print("\nDownloading the OFFICIAL OSV-5M Test Set locally (This may take a few minutes)...")
+
     dataset = load_dataset(
         "osv5m/osv5m", 
         split="test", 
-        streaming=True,     # <--- FALSE: Downloads the 8GB file locally!
+        streaming=True,
         trust_remote_code=True
     ).take(5000)
     
@@ -60,9 +55,6 @@ def main():
         writer = csv.writer(file)
         writer.writerow(["Model_Version", "Median_Dist_km", "Acc_25km", "Acc_200km", "Acc_750km", "Acc_2500km"])
 
-    # ==========================================
-    # EVALUATE STAGE 1 (The Baseline)
-    # ==========================================
     stage1_path = os.path.join(os.path.dirname(__file__), '..', 'checkpoints', 'stage1_baseline.ckpt')
     if os.path.exists(stage1_path):
         print("\n---> Grading Stage 1 (Before Bias Ablation)...")

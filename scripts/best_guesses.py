@@ -12,7 +12,7 @@ def translate_coords(lat, lon):
         return "Unknown Location"
 
 def find_best_guesses():
-    filepath = "guess_log.txt" 
+    filepath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'lightning_logs', 'guess_log.txt'))
     
     if not os.path.exists(filepath):
         print(f"Error: Could not find {filepath}")
