@@ -29,7 +29,7 @@ All models were trained and evaluated utilizing a singular shared NVIDIA A4500 G
 
 1. Clone this repository:
    ```bash
-   git clone [https://github.com/yashdesai2210/GeoLocked.git](https://github.com/yashdesai2210/GeoLocked.git)
+   git clone https://https://github.com/ary51/GeoWiSE
    cd GeoLocked
 2. Create a virtual environment (Recommended):
    ```bash
